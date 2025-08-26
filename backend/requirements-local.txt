@@ -12,6 +12,7 @@ pluggy==1.6.0
 pydantic==2.11.7
 pydantic_core==2.33.2
 Pygments==2.19.2
+pytest==8.4.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 pytz==2025.2

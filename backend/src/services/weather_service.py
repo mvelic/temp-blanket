@@ -1,18 +1,11 @@
 # backend/src/services/weather_service.py
 from datetime import datetime
 import requests
-# from tenacity import retry
-import backoff
+from tenacity import retry, stop_after_attempt, wait_exponential, wait_random
 
 
-# @retry
-@backoff.on_exception(backoff.fibo,
-                      (requests.exceptions.ConnectionError,
-                       requests.exceptions.ConnectTimeout,
-                       requests.exceptions.HTTPError,
-                       requests.exceptions.ReadTimeout,
-                       requests.exceptions.Timeout),
-                      max_value=21)
+@retry(stop=stop_after_attempt(5),
+       wait=wait_exponential(multiplier=1.5, max=8)+wait_random(0, 2))
 def get_historical_temperatures(latitude, longitude, year):
     """
     Fetches daily average temperatures for a given location and year.
@@ -31,7 +24,7 @@ def get_historical_temperatures(latitude, longitude, year):
     }
 
     try:
-        response = requests.get(url, params=params, timeout=5)
+        response = requests.get(url, params=params, timeout=3)
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         data = response.json()
 
