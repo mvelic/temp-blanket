@@ -1,40 +1,67 @@
 # backend/src/services/weather_service.py
+from datetime import datetime
 import requests
+# from tenacity import retry
+import backoff
 
-def get_historical_temperatures(latitude, longitude, start_date, end_date):
+
+# @retry
+@backoff.on_exception(backoff.fibo,
+                      (requests.exceptions.ConnectionError,
+                       requests.exceptions.ConnectTimeout,
+                       requests.exceptions.HTTPError,
+                       requests.exceptions.ReadTimeout,
+                       requests.exceptions.Timeout),
+                      max_value=21)
+def get_historical_temperatures(latitude, longitude, year):
     """
-    Fetches daily average temperatures for a given location and date range.
+    Fetches daily average temperatures for a given location and year.
     """
+    verify_year(year)
+    
     url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "start_date": start_date,
-        "end_date": end_date,
+        "start_date": f"{year}-01-01",
+        "end_date": f"{year}-12-31",
         "daily": "temperature_2m_max",
         "timezone": "auto",
         "temperature_unit": "fahrenheit"
     }
 
     try:
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         data = response.json()
-        return data
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data from Open-Meteo API: {e}")
         return None
+    
+    return data
+
+
+def verify_year(year):
+    """
+    Verifies that the year provided falls between 1940 and the prior year.
+    """
+    oldest_year = 1940
+    prior_year = datetime.now().year - 1
+
+    if int(year) < oldest_year or int(year) > prior_year:
+        return f"Please select a year between 1940 and {str(prior_year)}."
+    return year
+
 
 if __name__ == '__main__':
     # Example for San Francisco, 2024 (37.77, -122.42)
     # Washington DC (38.9072° N, 77.0369° W)
-    sf_latitude = 38.91
-    sf_longitude = -77.01
-    start = "2024-01-01"
-    end = "2024-12-31"
+    latitude = 38.91
+    longitude = -77.01
+    year = "1940"
 
-    temperature_data = get_historical_temperatures(sf_latitude, sf_longitude, start, end)
+    temperature_data = get_historical_temperatures(latitude, longitude, year)
 
     if temperature_data:
         # Here's what the data looks like. You will parse it later.
