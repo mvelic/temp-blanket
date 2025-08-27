@@ -1,7 +1,12 @@
 # backend/src/services/weather_service.py
 from datetime import datetime
+from os import getenv
 import requests
+from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential, wait_random
+
+
+load_dotenv()
 
 
 @retry(stop=stop_after_attempt(5),
@@ -12,7 +17,7 @@ def get_historical_temperatures(latitude, longitude, year):
     """
     verify_year(year)
     
-    url = "https://archive-api.open-meteo.com/v1/archive"
+    url = f"https://{getenv("WEATHER_URL")}"
     params = {
         "latitude": latitude,
         "longitude": longitude,
