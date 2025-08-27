@@ -1,5 +1,4 @@
 # backend/src/services/weather_service.py
-from datetime import datetime
 from os import getenv
 import requests
 from dotenv import load_dotenv
@@ -15,8 +14,6 @@ def get_historical_temperatures(latitude, longitude, year):
     """
     Fetches daily average temperatures for a given location and year.
     """
-    verify_year(year)
-    
     url = f"https://{getenv("WEATHER_URL")}"
     params = {
         "latitude": latitude,
@@ -38,42 +35,3 @@ def get_historical_temperatures(latitude, longitude, year):
         return None
     
     return data
-
-
-def verify_year(year):
-    """
-    Verifies that the year provided falls between 1940 and the prior year.
-    """
-    oldest_year = 1940
-    prior_year = datetime.now().year - 1
-
-    if year is None or year.isalpha() or year.isspace():
-        return f"Please enter a valid 4-digit year."
-    
-    try:
-        if int(year) < oldest_year or int(year) > prior_year:
-            return f"Please enter a year between 1940 and {str(prior_year)}."
-        return year
-    except ValueError:
-        return f"Please enter a valid 4-digit year."
-
-
-if __name__ == '__main__':
-    # Example for San Francisco, 2024 (37.77, -122.42)
-    # Washington DC (38.9072° N, 77.0369° W)
-    latitude = 38.91
-    longitude = -77.01
-    year = "1940"
-
-    temperature_data = get_historical_temperatures(latitude, longitude, year)
-
-    if temperature_data:
-        # Here's what the data looks like. You will parse it later.
-        print(temperature_data)
-        daily_max_temps = temperature_data.get("daily", {}).get("temperature_2m_max")
-        dates = temperature_data.get("daily", {}).get("time")
-
-        if dates and daily_max_temps:
-            print("\nDates and Daily Max Temperatures:")
-            for date, temp in zip(dates, daily_max_temps):
-                print(f"{date}: {temp}°F")
