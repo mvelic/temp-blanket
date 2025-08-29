@@ -1,22 +1,12 @@
 from services.input_service import verify_year
-from services.weather_service import get_historical_temperatures
+from services.weather_service import get_historical_temperatures, parse_temp_readings
 
 
 def main(latitude, longitude, year):
-    temperature_data = get_historical_temperatures(latitude, longitude, year)
-
     verify_year(year)
-
-    if temperature_data:
-        # Here's what the data looks like. You will parse it later.
-        # print(temperature_data)
-        daily_max_temps = temperature_data.get("daily", {}).get("temperature_2m_max")
-        dates = temperature_data.get("daily", {}).get("time")
-
-        if dates and daily_max_temps:
-            print("\nDates and Daily Max Temperatures:")
-            for date, temp in zip(dates, daily_max_temps):
-                print(f"{date}: {temp}°F")
+    api_temp_data = get_historical_temperatures(latitude, longitude, year)
+    parsed_temp_data = parse_temp_readings(api_temp_data)
+    print(parsed_temp_data)
 
 
 if __name__ == '__main__':
