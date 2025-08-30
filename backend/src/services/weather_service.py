@@ -3,6 +3,7 @@ from os import getenv
 import requests
 from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential, wait_random
+from models.data_models import TemperatureReading
 
 
 load_dotenv()
@@ -21,8 +22,7 @@ def get_historical_temperatures(latitude, longitude, year):
         "start_date": f"{year}-01-01",
         "end_date": f"{year}-12-31",
         "daily": "temperature_2m_max",
-        "timezone": "auto",
-        "temperature_unit": "fahrenheit"
+        "timezone": "auto"
     }
 
     try:
@@ -35,3 +35,14 @@ def get_historical_temperatures(latitude, longitude, year):
         return None
     
     return data
+
+
+def parse_temp_readings(raw_api_data):
+    """
+    Parses the raw temperature api data into the TemperatureReading model
+    """
+    temp_data = []
+    for date, temp in zip(raw_api_data.get("daily").get("time"), raw_api_data.get("daily").get("temperature_2m_max")):
+        temp_data.append(TemperatureReading(reading_date=date, max_temp_c=temp))
+
+    return temp_data

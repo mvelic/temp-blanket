@@ -1,5 +1,6 @@
 # backend/src/services/input_service.py
 from datetime import datetime
+from models.data_models import City
 
 
 def verify_year(year):
@@ -18,3 +19,19 @@ def verify_year(year):
         return year
     except ValueError:
         return f"Please enter a valid 4-digit year."
+
+
+def verify_city(city_name):
+    """
+    Verifies a city and creates a City model
+    """
+    # Example for San Francisco (37.77, -122.42)
+    # Washington DC (38.9072, -77.0369)
+    lat  = 38.9072
+    long = -77.0369
+
+    try:
+        city = City(city=city_name, latitude=lat, longitude=long)
+        return city
+    except ValueError:
+        return f"This city does not exist."
