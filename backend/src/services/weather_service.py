@@ -3,6 +3,7 @@ from os import getenv
 import requests
 from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential, wait_random
+from ..models.data_models import TemperatureReading
 
 
 load_dotenv()
@@ -35,3 +36,16 @@ def get_historical_temperatures(latitude, longitude, year):
         return None
     
     return data
+
+
+def parse_temp_readings(api_response):
+    """
+    Takes the api data and returns the parsed temp readings
+    """
+    if api_response:
+        daily_max_temps = api_response.get("daily", {}).get("temperature_2m_max")
+        dates = api_response.get("daily", {}).get("time")
+
+        if dates and daily_max_temps:
+            for date, temp in zip(dates, daily_max_temps):
+                TemperatureReading(date, temp)
